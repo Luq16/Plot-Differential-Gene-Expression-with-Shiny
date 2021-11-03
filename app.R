@@ -25,8 +25,8 @@ ui <- dashboardPage(
                 from = "The Other Side",
                 message = "I'll leave that up to you.",
                 href = "http://coursera.org/search?query=rhyme",
-                icon = icon("user"),  # Try another icon: 'question', 'life-ring'
-                time = "13:31")       # Try different date/time format '2020-4-29', '2020-4-29 01:45'
+                icon = icon("user"),
+                time = "13:31")
             
             # , 
             
@@ -147,6 +147,35 @@ ui <- dashboardPage(
 
 # ==== server.R START ===========================================================
 server <- function(input, output) {
+    output$odataset <- renderPrint({
+        paste(input$My_dataset," = ", gn$Gene[gn$GeneID==input$My_dataset])
+    })
+    
+    # using GeneBook library to construct a link to the gene database
+    abbreviation <- reactive((GeneCard_ID_Convert(input$My_dataset)))
+    
+    # output for the odataset_link
+    output$odataset_link <- renderPrint({
+        tags$a(
+            href = paste(
+                "https://www.genecards.org/cgi-bin/carddisp.pl?gene=",
+                as.character(abbreviation()[1]),
+                sep = ''
+            ),
+            as.character(abbreviation()[1])
+        )
+    })
+    
+    
+    full_file_name <-reactive(paste("./inc/", input$G_groups, ".csv", sep = ""))
+    
+    output$downloadData <- downloadHandler(
+        
+        filename = full_file_name,
+        
+        content = function(file){
+            write.csv(read.csv(full_file_name()), quote = FALSE,file)
+        } )
     
 }
 # ===================================================== server.R END ============
